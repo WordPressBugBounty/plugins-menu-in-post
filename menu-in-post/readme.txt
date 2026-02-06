@@ -2,9 +2,9 @@
 Contributors: linux4me2
 Tags: display menu, menu, shortcode, menu in post, menu in page
 Requires at least: 5.0
-Tested up to: 6.6
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.3
+Stable tag: 1.4.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0-standalone.html
 
@@ -22,7 +22,6 @@ With Menu In Post, you can create shortcodes to display menus as hyperlinked lis
 * Configurable ordering (via WordPress Menus UI)
 * Set optional IDs and/or classes to menu containers and lists
 * Append a text string to the URL of all menu items
-* Compatible up to PHP 8.1
 * Admin UI in Settings to tweak JavaScript loading and minification
 * Works with block-enabled themes with option to display classic menu editor
 
@@ -61,6 +60,14 @@ You will find a 'Menu In Post' menu in your WordPress admin Tools panel after in
 3. A Menu In Post shortcode in a Shortcode Block.
 
 == Changelog ==
+
+= 1.4.1 =
+
+* Correct versioning and update plugin description.
+
+= 1.4.0 =
+
+* Fixed cross-site scripting vulnerability for users >= contributor, updated code and structure to current WP best-practices.
 
 = 1.3 =
 
