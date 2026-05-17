@@ -12,15 +12,79 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Sanitize mip_options before saving.
+ *
+ * Validates and cleans the option array saved under the MIP_OPTION_NAME option:
+ * - miploadjs: must be one of 'always', 'never', 'onlypages'; defaults to existing value or 'always'.
+ * - miponlypages: comma-separated list of post/page IDs; non-numeric characters removed, IDs 
+ *  normalized to unique positive integers, stored as a comma-separated string.
+ * - mipminimizejs: must be 'yes' or 'no'; defaults to existing value or 'yes'.
+ * - mipshowappearancemenus: must be 'yes' or 'no'; defaults to existing value or 'no'.
+ *
+ * The function loads the existing option to preserve unknown or read-only keys when an input is missing,
+ * and always returns a deterministic, side-effect-free cleaned array suitable for register_setting().
+ *
+ * @param array $input Raw input from the settings form (expected as mip_options[]).
+ * @return array Cleaned mip_options array ready for storage.
+ */
+function menuinpost_sanitize_options( $input ) {
+	$clean = array();
+
+	// Load existing to preserve unknown/read-only keys if needed.
+	$existing = get_option( MIP_OPTION_NAME, array() );
+
+	// miploadjs: one of 'always', 'never', 'onlypages'
+	$allowed_loadjs = array( 'always', 'never', 'onlypages' );
+	$clean['miploadjs'] = ( isset( $input['miploadjs'] ) && in_array( $input['miploadjs'], $allowed_loadjs, true ) )
+		? $input['miploadjs']
+		: ( isset( $existing['miploadjs'] ) ? $existing['miploadjs'] : 'always' );
+
+	// miponlypages: comma-separated integers (post/page IDs) -> store as sanitized comma list
+	if ( isset( $input['miponlypages'] ) ) {
+		$raw = trim( (string) $input['miponlypages'] );
+		if ( $raw === '' ) {
+			$clean['miponlypages'] = '';
+		} else {
+			$parts = array_map( 'trim', explode( ',', $raw ) );
+			$ints = array();
+			foreach ( $parts as $p ) {
+				$p = preg_replace( '/\D+/', '', $p );
+				if ( $p !== '' ) {
+					$ints[] = absint( $p );
+				}
+			}
+			$clean['miponlypages'] = implode( ',', array_unique( array_filter( $ints ) ) );
+		}
+	} else {
+		$clean['miponlypages'] = isset( $existing['miponlypages'] ) ? $existing['miponlypages'] : '';
+	}
+
+	// mipminimizejs: 'yes' or 'no'
+	$allowed_min = array( 'yes', 'no' );
+	$clean['mipminimizejs'] = ( isset( $input['mipminimizejs'] ) && in_array( $input['mipminimizejs'], $allowed_min, true ) )
+		? $input['mipminimizejs']
+		: ( isset( $existing['mipminimizejs'] ) ? $existing['mipminimizejs'] : 'yes' );
+
+	// mipshowappearancemenus: 'yes' or 'no'
+	$clean['mipshowappearancemenus'] = ( isset( $input['mipshowappearancemenus'] ) && in_array( $input['mipshowappearancemenus'], $allowed_min, true ) )
+		? $input['mipshowappearancemenus']
+		: ( isset( $existing['mipshowappearancemenus'] ) ? $existing['mipshowappearancemenus'] : 'no' );
+
+	return $clean;
+}
+
+
+/**
  * Menu In Post options and settings.
  *
  * @return void
  */
-function init_menu_in_post_options() {
+function menuinpost_init_options() {
 	// Register option array.
 	register_setting(
 		'menu-in-post',
-		'mip_options'
+		MIP_OPTION_NAME,
+		array( 'sanitize_callback' => 'menuinpost_sanitize_options' )
 	);
 
 	add_settings_section(
@@ -55,7 +119,7 @@ function init_menu_in_post_options() {
 	);
 	add_settings_field(
 		'miponlypages',
-		__( 'Only on Posts/Pages:' ),
+		__( 'Only on Posts/Pages:', 'menu-in-post' ),
 		'callback_mip_field_only_pages',
 		'menu-in-post-options',
 		'mip_options_section_js',
@@ -66,7 +130,7 @@ function init_menu_in_post_options() {
 	);
 	add_settings_field(
 		'mipminimizejs',
-		__( 'Minimize JavaScript:' ),
+		__( 'Minimize JavaScript:', 'menu-in-post' ),
 		'callback_mip_minimize_js',
 		'menu-in-post-options',
 		'mip_options_section_js',
@@ -86,7 +150,7 @@ function init_menu_in_post_options() {
 
 		add_settings_field(
 			'mipaddappearancemenu',
-			__( 'Show Appearance > Menus:' ),
+			__( 'Show Appearance > Menus:', 'menu-in-post' ),
 			'callback_mip_show_appearance_menus',
 			'menu-in-post-options',
 			'mip_options_section_appearance_menus',
@@ -99,9 +163,9 @@ function init_menu_in_post_options() {
 }
 
 /**
- * Register init_menu_in_post_options to the admin_init action hook.
+ * Register menuinpost_init_options to the admin_init action hook.
  */
-add_action( 'admin_init', 'init_menu_in_post_options' );
+add_action( 'admin_init', 'menuinpost_init_options' );
 
 /**
  * Output the HTML for the Menu In Post Options page intro.
@@ -152,7 +216,7 @@ function callback_mip_appearance_menus( $args ) {
  */
 function callback_mip_field_load_js( $args ) {
 	// Returns the HTML.
-	$options = get_option( 'mip_options' );
+	$options = get_option( MIP_OPTION_NAME );
 	?>
 	<select
 		id="<?php echo esc_attr( $args['label_for'] ); ?>" 
@@ -194,7 +258,7 @@ function callback_mip_field_load_js( $args ) {
  */
 function callback_mip_field_only_pages( $args ) {
 	// Returns the HTML.
-	$options = get_option( 'mip_options' );
+	$options = get_option( MIP_OPTION_NAME );
 	if ( isset( $options[ $args['label_for'] ] ) ) {
 		$val = $options[ $args['label_for'] ];
 	} else {
@@ -220,7 +284,7 @@ function callback_mip_field_only_pages( $args ) {
  */
 function callback_mip_minimize_js( $args ) {
 	// Returns the HTML.
-	$options = get_option( 'mip_options' );
+	$options = get_option( MIP_OPTION_NAME );
 	if ( isset( $options[ $args['label_for'] ] ) ) {
 		$selected = ' selected';
 	} else {
@@ -266,7 +330,7 @@ function callback_mip_minimize_js( $args ) {
  */
 function callback_mip_show_appearance_menus( $args ) {
 	// Returns the HTML.
-	$options = get_option( 'mip_options' );
+	$options = get_option( MIP_OPTION_NAME );
 	if ( isset( $options[ $args['label_for'] ] ) ) {
 		$selected = ' selected';
 	} else {
@@ -308,7 +372,7 @@ function callback_mip_show_appearance_menus( $args ) {
  *
  * @return void
  */
-function add_mip_admin_menus() {
+function menuinpost_add_admin_menus() {
 	// Returns the options for the Menu In Post menus.
 	$tools = add_submenu_page(
 		'tools.php',
@@ -316,9 +380,9 @@ function add_mip_admin_menus() {
 		__( 'Menu In Post Tools', 'menu-in-post' ),
 		'manage_options',
 		'menu-in-post',
-		'output_mip_tools_page_html'
+		'menuinpost_output_tools_page_html'
 	);
-	add_action( 'load-' . $tools, 'load_mip_tools_page' );
+	add_action( 'load-' . $tools, 'menuinpost_load_tools_page' );
 
 	$options = add_submenu_page(
 		'options-general.php',
@@ -326,18 +390,18 @@ function add_mip_admin_menus() {
 		__( 'Menu In Post', 'menu-in-post' ),
 		'manage_options',
 		'menu-in-post-options',
-		'output_mip_post_options_html'
+		'menuinpost_output_post_options_html'
 	);
-	add_action( 'load-' . $options, 'load_mip_options_page' );
+	add_action( 'load-' . $options, 'menuinpost_load_options_page' );
 }
-add_action( 'admin_menu', 'add_mip_admin_menus' );
+add_action( 'admin_menu', 'menuinpost_add_admin_menus' );
 
 /**
  * Load the Menu In Post Tools Admin page and Help Tabs.
  *
  * @return void
  */
-function load_mip_tools_page() {
+function menuinpost_load_tools_page() {
 	$help_tabs = new \MenuInPost\MIPHelpTabs( get_current_screen() );
 	$help_tabs->mip_set_help_tabs( 'tools' );
 }
@@ -347,7 +411,7 @@ function load_mip_tools_page() {
  *
  * @return void
  */
-function load_mip_options_page() {
+function menuinpost_load_options_page() {
 	$help_tabs = new \MenuInPost\MIPHelpTabs( get_current_screen() );
 	$help_tabs->mip_set_help_tabs( 'options' );
 }
@@ -357,7 +421,7 @@ function load_mip_options_page() {
  *
  * @return void
  */
-function output_mip_post_options_html() {
+function menuinpost_output_post_options_html() {
 	// Returns the HTML.
 	if ( ! current_user_can( 'manage_options' ) ) {
 		return;
@@ -408,7 +472,7 @@ function output_mip_post_options_html() {
  *
  * @return void
  */
-function output_mip_tools_page_html() {
+function menuinpost_output_tools_page_html() {
 	// Returns the HTML.
 	// In the Tools page callback (runs on every load).
 	if ( isset( $_GET['_wpnonce'] ) ) {
@@ -427,7 +491,7 @@ function output_mip_tools_page_html() {
 	}
 
 	$options   = get_option(
-		'mip_options',
+		MIP_OPTION_NAME,
 		array(
 			'miploadjs'     => 'always',
 			'miponlypages'  => '',
@@ -801,14 +865,14 @@ function output_mip_tools_page_html() {
  *
  * @return void
  */
-function enqueue_mip_admin_scripts( $hook ) {
+function menuinpost_enqueue_admin_scripts( $hook ) {
 	if ( 'tools_page_menu-in-post' !== $hook
 		&& 'settings_page_menu-in-post-options' !== $hook
 	) {
 		return;
 	}
 	$options = get_option(
-		'mip_options',
+		MIP_OPTION_NAME,
 		array(
 			'miploadjs'     => 'always',
 			'miponlypages'  => '',
@@ -835,7 +899,7 @@ function enqueue_mip_admin_scripts( $hook ) {
 		false
 	);
 }
-add_action( 'admin_enqueue_scripts', 'enqueue_mip_admin_scripts' );
+add_action( 'admin_enqueue_scripts', 'menuinpost_enqueue_admin_scripts' );
 
 /**
  * Optionally, add back the Appearance > Menus menu subitem so that users
@@ -845,9 +909,9 @@ add_action( 'admin_enqueue_scripts', 'enqueue_mip_admin_scripts' );
  *
  * @return void
  */
-function get_back_appearance_menus() {
+function menuinpost_get_back_appearance_menus() {
 	$options = get_option(
-		'mip_options',
+		MIP_OPTION_NAME,
 		array( 'mipshowappearancemenus' => 'no' )
 	);
 	if ( array_key_exists( 'mipshowappearancemenus', $options ) ) {
@@ -856,12 +920,12 @@ function get_back_appearance_menus() {
 				array(
 					'primary' => esc_html__(
 						'Primary Menu',
-						'raft'
+						'menu-in-post'
 					),
 				)
 			);
 		}
 	}
 }
-add_action( 'init', 'get_back_appearance_menus' );
+add_action( 'init', 'menuinpost_get_back_appearance_menus' );
 ?>

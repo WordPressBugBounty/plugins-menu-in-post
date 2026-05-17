@@ -50,7 +50,7 @@ class MIPHelpTabs {
 			case 'options':
 				$this->screen->add_help_tab(
 					array(
-						'id'      => 'mip_options',
+						'id'      => MIP_OPTION_NAME,
 						'title'   => __( 'Menu In Post Options', 'menu-in-post' ),
 						'content' => $this->tabcontent( 'options' ),
 					)
@@ -228,7 +228,8 @@ class MIPHelpTabs {
 					) . '</h3>';
 				$content['options'] .= '<p>' .
 					__(
-						'Since WordPress 5.9, the Appearance > Menus menu link for the classic menu editor, required to add/edit menus for Menu In Post, has been hidden for block-enabled themes. Set the "Show Appearance > Menus" option to "yes" to display the Menus link in the Appearance menu in Admin to add/edit menus for Menu In Post. If you are not using a block-enabled theme, the "Show Appearance > Menus" option will not be displayed.'
+						'Since WordPress 5.9, the Appearance > Menus menu link for the classic menu editor, required to add/edit menus for Menu In Post, has been hidden for block-enabled themes. Set the "Show Appearance > Menus" option to "yes" to display the Menus link in the Appearance menu in Admin to add/edit menus for Menu In Post. If you are not using a block-enabled theme, the "Show Appearance > Menus" option will not be displayed.',
+						'menu-in-post'
 					) . '</p>';
 				break;
 		}

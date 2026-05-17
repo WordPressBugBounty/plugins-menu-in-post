@@ -85,7 +85,11 @@ class MIPWalkerNavMenuDropdownBuilder extends \Walker_Nav_Menu {
 
 		// Add the HTML.
 		$item_output .= '<option' . $attributes . '>';
+		
+		// Using a core filter; PHPCS suppressing a false positive.
+		// @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		$item_output .= apply_filters( 'the_title_attribute', $item->title );
+		// @phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 
 		// Add the new item to the output string.
 		$output .= $item_output;

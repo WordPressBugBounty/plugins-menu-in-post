@@ -45,7 +45,9 @@ class MIPWalkerNavMenuListBuilder extends \Walker_Nav_Menu {
 
 		$classes   = empty( $item->classes ) ? array() : (array) $item->classes;
 		$classes[] = 'menu-item-' . $item->ID;
-
+		
+		// Using a core filter; PHPCS suppressing a false positive.
+		// @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		$args = apply_filters( 'nav_menu_item_args', $args, $item, $depth );
 
 		$class_names = implode(
@@ -58,8 +60,11 @@ class MIPWalkerNavMenuListBuilder extends \Walker_Nav_Menu {
 				$depth
 			)
 		);
+		// @phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		$class_names = $class_names ? ' class="' . esc_attr( $class_names ) . '"' : '';
 
+		// Using a core filter; PHPCS suppressing a false positive.
+		// @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		$id = apply_filters(
 			'nav_menu_item_id',
 			'menu-item-' . $item->ID,
@@ -67,6 +72,7 @@ class MIPWalkerNavMenuListBuilder extends \Walker_Nav_Menu {
 			$args,
 			$depth
 		);
+		// @phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		$id = $id ? ' id="' . esc_attr( $id ) . '"' : '';
 
 		$output .= $indent . '<li' . $id . $class_names . '>';
@@ -87,6 +93,8 @@ class MIPWalkerNavMenuListBuilder extends \Walker_Nav_Menu {
 		}
 		$atts['aria-current'] = $item->current ? 'page' : '';
 
+		// Using a core filter; PHPCS suppressing a false positive.
+		// @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		$atts = apply_filters(
 			'nav_menu_link_attributes',
 			$atts,
@@ -94,6 +102,7 @@ class MIPWalkerNavMenuListBuilder extends \Walker_Nav_Menu {
 			$args,
 			$depth
 		);
+		// @phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 
 		$attributes = '';
 		foreach ( $atts as $attr => $value ) {
@@ -103,9 +112,12 @@ class MIPWalkerNavMenuListBuilder extends \Walker_Nav_Menu {
 			}
 		}
 
+		// Using a core filter; PHPCS suppressing a false positive.
+		// @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		$title = apply_filters( 'the_title', $item->title, $item->ID );
 
 		$title = apply_filters( 'nav_menu_item_title', $title, $item, $args, $depth );
+		// @phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 
 		$item_output  = $args->before;
 		$item_output .= '<a' . $attributes . '>';
@@ -113,6 +125,8 @@ class MIPWalkerNavMenuListBuilder extends \Walker_Nav_Menu {
 		$item_output .= '</a>';
 		$item_output .= $args->after;
 
+		// Using a core filter; PHPCS suppressing a false positive.
+		// @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		$output .= apply_filters(
 			'walker_nav_menu_start_el',
 			$item_output,
@@ -120,5 +134,6 @@ class MIPWalkerNavMenuListBuilder extends \Walker_Nav_Menu {
 			$depth,
 			$args
 		);
+		// @phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 	}
 }

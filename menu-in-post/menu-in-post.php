@@ -5,7 +5,7 @@
  * Author: linux4me2
  * Author URI: https://profiles.wordpress.org/linux4me2
  * Text Domain: menu-in-post
- * Version: 1.4.1
+ * Version: 1.5.0
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0-standalone.html
  *
@@ -25,7 +25,12 @@ define( 'MENUINPOST_PLUGIN', __FILE__ );
 define( 'MENUINPOST_PLUGIN_DIR', untrailingslashit( dirname( MENUINPOST_PLUGIN ) ) );
 
 if ( ! defined( 'MENU_IN_POST_VERSION' ) ) {
-	define( 'MENU_IN_POST_VERSION', '1.4.1' ); // keep in sync with the plugin header.
+	define( 'MENU_IN_POST_VERSION', '1.5.0' ); // Keep in sync with the plugin header.
+}
+
+// Used in uninstall.php to prevent warnings about non-prefixed globals.
+if ( ! defined( 'MIP_OPTION_NAME' ) ) {
+    define( 'MIP_OPTION_NAME', 'mip_options' );
 }
 
 // Register a simple autoloader that looks in the plugin’s root directory.
@@ -67,7 +72,7 @@ if ( is_admin() ) {
 	include_once MENUINPOST_PLUGIN_DIR . '/admin/admin.php';
 }
 
-add_shortcode( 'menu_in_post_menu', 'output_mip_menu' );
+add_shortcode( 'menu_in_post_menu', 'menuinpost_output_menu' );
 
 
 /**
@@ -77,18 +82,18 @@ add_shortcode( 'menu_in_post_menu', 'output_mip_menu' );
  *
  * @return Returns the menu via wp_nav_menu()
  */
-function output_mip_menu( $atts = array() ) {
+function menuinpost_output_menu( $atts = array() ) {
 	if ( isset( $atts['menu'] ) ) {
 		$menu = absint( $atts['menu'] );
 	} else {
 		$menu = 0;
 	}
 	if ( 0 === $menu ) {
-		return fallback_mip();
+		return menuinpost_fallback();
 	} else {
 		$args = array(
 			'menu'        => $menu,
-			'fallback_cb' => 'fallback_mip',
+			'fallback_cb' => 'menuinpost_fallback',
 			'echo'        => false,
 		);
 	}
@@ -158,16 +163,16 @@ function output_mip_menu( $atts = array() ) {
  *
  * @return void
  */
-function fallback_mip() {}
+function menuinpost_fallback() {}
 
-add_action( 'wp_enqueue_scripts', 'enqueue_mip_front_end_js' );
+add_action( 'wp_enqueue_scripts', 'menuinpost_enqueue_front_end_scripts' );
 
 /**
  * Selectively enqueues the JavaScript for Menu In Post
  *
  * @return void
  */
-function enqueue_mip_front_end_js() {
+function menuinpost_enqueue_front_end_scripts() {
 	$options = get_option(
 		'mip_options',
 		array(
