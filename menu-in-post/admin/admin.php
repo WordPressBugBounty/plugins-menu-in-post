@@ -499,66 +499,6 @@ function menuinpost_output_tools_page_html() {
 		)
 	);
 	$shortcode = '';
-	// Fallback for no JavaScript. Normally, the form is submitted via JavaScript,
-	// and everything is done client-side.
-	if ( isset( $_POST['mip_menu'] ) ) {
-		$atts = array(
-			'menu'             => 'mip_menu',
-			'menu_class'       => 'mip_menu_class',
-			'menu_id'          => 'mip_menu_id',
-			'container'        => 'mip_container',
-			'container_class'  => 'mip_container_class',
-			'container_id'     => 'mip_container_id',
-			'depth'            => 'mip_depth',
-			'style'            => 'mip_style',
-			'placeholder_text' => 'mip_placeholder_text',
-			'append_to_url'    => 'mip_append_to_url',
-		);
-		foreach ( $atts as $att => $field ) {
-			if ( isset( $_POST[ $field ] ) ) {
-				switch ( $att ) {
-					case 'menu':
-					case 'depth':
-					case 'container':
-						$$att = absint( $_POST[ $field ] );
-						break;
-					// These should only be strings.
-					default:
-						$$att = trim( sanitize_text_field( wp_unslash( $_POST[ $field ] ) ) );
-				}
-			}
-		}
-		// Build the shortcode.
-		$shortcode = '[menu_in_post_menu';
-		foreach ( $atts as $att => $field ) {
-			switch ( $att ) {
-				case 'menu':
-					$shortcode .= ' ' . $att . '=' . $$att;
-					break;
-				case 'depth':
-					if ( $depth > 0 ) {
-						$shortcode .= ' depth=' . $depth;
-					}
-					break;
-				case 'style':
-					if ( 'list' !== $style ) {
-						$shortcode .= ' style=' . $style;
-					}
-					break;
-				case 'container':
-					if ( 0 === $container ) {
-						$shortcode .= ' container=&#34;false&#34;';
-					}
-					break;
-				default:
-					if ( '' !== $$att ) {
-						$shortcode .= ' ' . $att . '=&#34;' . $$att . '&#34;';
-					}
-			}
-		}
-		$shortcode .= ']';
-	}
-	/* ************************* End of JavaScript fallback. ********************* */
 	?>
 	<div class="wrap">
 		<h1><?php echo esc_html( __( 'Menu In Post Tools', 'menu-in-post' ) ); ?></h1>
@@ -584,15 +524,28 @@ function menuinpost_output_tools_page_html() {
 				break;
 		}
 		if ( '' !== $str ) {
-			/*
-				Use the wp_admin_notice() function, added in WP 6.4, if possible.
-
-				Fall back to HTML output if < WP 6.4.
-
-				You can remove the conditional for WP version once there has
-				been time for everyone to upgrade to >= WP 6.4.
-			*/
-			if ( is_wp_version_compatible( '6.4' ) ) {
+			wp_admin_notice(
+				sprintf(
+					/* translators: %1$s = already‑translated title, %2$s = already‑translated description */
+					__( '<strong>%1$s</strong> %2$s', 'menu-in-post' ),
+					$title,
+					$str
+				),
+				array(
+					'type'        => 'warning',
+					'dismissible' => false,
+				)
+			);
+		}
+		$str = esc_html(
+			__(
+				'JavaScript is required for generating Menu In Post shortcodes, but is disabled for this page. Please enable JavaScript in your browser.',
+				'menu-in-post'
+			)
+		);
+		?>
+		<noscript>
+			<?php
 				wp_admin_notice(
 					sprintf(
 						/* translators: %1$s = already‑translated title, %2$s = already‑translated description */
@@ -605,17 +558,8 @@ function menuinpost_output_tools_page_html() {
 						'dismissible' => false,
 					)
 				);
-			} else {
-				?>
-				<div class="notice notice-warning">
-					<p>
-						<strong><?php echo esc_html( $title ); ?></strong> <?php echo esc_html( $str ); ?>
-					</p>
-				</div>
-				<?php
-			}
-		}
-		?>
+			?>
+		</noscript>
 		<p>
 			<?php
 				echo esc_html(
@@ -828,15 +772,7 @@ function menuinpost_output_tools_page_html() {
 		</div>
 	</div>
 		<?php
-	} elseif ( is_wp_version_compatible( '6.4' ) ) {
-		/*
-			Use the wp_admin_notice() function, added in WP 6.4, if possible.
-
-			Fall back to HTML output if < WP 6.4.
-
-			You can remove the conditional for WP version once there has
-			been time for everyone to upgrade to >= WP 6.4.
-		*/
+	} else {
 		wp_admin_notice(
 			esc_html__(
 				"You must create one or more menus (Appearance > Menus) prior to using Menu In Post's Shortcode Builder.",
@@ -847,12 +783,6 @@ function menuinpost_output_tools_page_html() {
 				'dismissible' => true,
 			)
 		);
-	} else {
-		?>
-		<div class="notice notice-warning is-dismissible">
-			<p><?php echo esc_html( $str ); ?></p>
-		</div>
-		<?php
 	}
 }
 

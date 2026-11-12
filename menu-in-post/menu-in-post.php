@@ -5,7 +5,7 @@
  * Author: linux4me2
  * Author URI: https://profiles.wordpress.org/linux4me2
  * Text Domain: menu-in-post
- * Version: 1.5.0
+ * Version: 1.5.1
  * License: GPL3
  * License URI: https://www.gnu.org/licenses/gpl-3.0-standalone.html
  *
@@ -25,7 +25,7 @@ define( 'MENUINPOST_PLUGIN', __FILE__ );
 define( 'MENUINPOST_PLUGIN_DIR', untrailingslashit( dirname( MENUINPOST_PLUGIN ) ) );
 
 if ( ! defined( 'MENU_IN_POST_VERSION' ) ) {
-	define( 'MENU_IN_POST_VERSION', '1.5.0' ); // Keep in sync with the plugin header.
+	define( 'MENU_IN_POST_VERSION', '1.5.1' ); // Keep in sync with the plugin header.
 }
 
 // Used in uninstall.php to prevent warnings about non-prefixed globals.

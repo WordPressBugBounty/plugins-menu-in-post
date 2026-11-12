@@ -4,7 +4,7 @@ Tags: display menu, menu, shortcode, menu in post, menu in page
 Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0-standalone.html
 
@@ -60,6 +60,11 @@ You will find a 'Menu In Post' menu in your WordPress admin Tools panel after in
 3. A Menu In Post shortcode in a Shortcode Block.
 
 == Changelog ==
+
+= 1.5.1 =
+
+* Removed no-JavaScript fallback for Menu In Post Tools, added noscript warning.
+* Removed pre-WP 6.4 code from admin.php.
 
 = 1.5.0 =
 
